@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS `tbl_user` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(10) NOT NULL,
+  `password` CHAR(60) NOT NULL,
+   PRIMARY KEY (`id`)
+);
