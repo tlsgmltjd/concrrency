@@ -1,4 +1,6 @@
 package com.concurrency.domain.user.dto
 
-class UserResponse {
-}
+data class UserResponse(
+    val id: Long,
+    val name: String
+)
