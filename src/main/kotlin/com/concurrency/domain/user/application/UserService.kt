@@ -12,9 +12,8 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-    fun queryById(request: Long): Mono<UserResponse> {
-        return userRepository.findById(request)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+    fun queryById(userId: Long): Mono<UserResponse> {
+        return userRepository.findById(userId)
             .map { UserResponse(it.id, it.name) }
     }
 
