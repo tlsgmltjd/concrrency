@@ -1,1 +1,1 @@
-rootProject.name = "concurrency"
+rootProject.name = "concurrency-webflux"
