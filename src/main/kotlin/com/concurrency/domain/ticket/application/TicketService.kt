@@ -5,6 +5,7 @@ import com.concurrency.domain.ticket.persistence.TicketRepository
 import com.concurrency.domain.ticket.persistence.TicketUser
 import com.concurrency.domain.ticket.persistence.TicketUserRepository
 import com.concurrency.domain.user.persistence.UserRepository
+import com.concurrency.global.lock.DistributedLock
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
@@ -18,6 +19,33 @@ class TicketService(
 
     @Transactional
     fun issueNolock(userId: Long, ticketId: Long): Mono<TicketIssueRes> {
+        return userRepository.findById(userId)
+            .flatMap { user ->
+                ticketRepository.findById(ticketId)
+                    .flatMap { ticket ->
+                        ticket.addCount()
+                        ticketRepository.save(ticket)
+                            .flatMap { savedTicket ->
+                                val ticketUser = TicketUser.of(user.id)
+                                ticketUserRepository.save(ticketUser)
+                                    .map { savedTicketUser ->
+                                        TicketIssueRes(
+                                            ticketId = savedTicket.id,
+                                            ticketName = savedTicket.name,
+                                            count = savedTicket.count,
+                                            limitCount = savedTicket.limitCount,
+                                            date = savedTicketUser.createTime
+                                        )
+                                    }
+                            }
+                    }
+            }
+    }
+
+
+    @Transactional
+    @DistributedLock(key = "ticket")
+    fun issue(userId: Long, ticketId: Long): Mono<TicketIssueRes> {
         return userRepository.findById(userId)
             .flatMap { user ->
                 ticketRepository.findById(ticketId)

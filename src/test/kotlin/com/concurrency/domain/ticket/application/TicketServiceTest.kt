@@ -3,6 +3,7 @@ package com.concurrency.domain.ticket.application
 import com.concurrency.domain.ticket.persistence.Ticket
 import com.concurrency.domain.ticket.persistence.TicketRepository
 import com.concurrency.domain.ticket.persistence.TicketUserRepository
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -45,6 +46,36 @@ class TicketServiceTest(
         // 기대 값: count = 300, userCount = 300
         // 실제 값: count = 30, userCount = 300 (동시성 문제 발생)
         println("result: count = $ticketCount, userCount = $ticketUserCount")
+
+     }
+
+
+     @Test
+     fun applyLock_concurrencyTest() {
+      val threadCount = 300
+      val executorService = Executors.newFixedThreadPool(threadCount)
+      val futures = mutableListOf<CompletableFuture<Void>>()
+
+      repeat(threadCount) { index ->
+       val future = CompletableFuture.runAsync({
+        ticketService.issue(1, 1)
+         .doOnError { e -> println("Error in thread $index: ${e.message}") }
+         .onErrorResume { Mono.empty() }
+         .block()
+       }, executorService)
+       futures.add(future)
+      }
+
+      CompletableFuture.allOf(*futures.toTypedArray()).join()
+      executorService.shutdown()
+
+      val ticketCount = ticketRepository.findById(1).map(Ticket::count).block()
+      val ticketUserCount = ticketUserRepository.count().block()
+
+      println("result: count = $ticketCount, userCount = $ticketUserCount")
+
+      Assertions.assertEquals(threadCount, ticketCount)
+      Assertions.assertEquals(threadCount, ticketUserCount)
 
      }
 }
