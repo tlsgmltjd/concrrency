@@ -21,7 +21,7 @@ class TicketController(
         @RequestParam("userId") userId: Long,
         @RequestParam("ticketId") ticketId: Long
     ): Mono<ResponseEntity<TicketIssueRes>> {
-        return ticketService.issue(userId, ticketId)
+        return ticketService.issueNolock(userId, ticketId)
             .map { ResponseEntity.status(HttpStatus.CREATED).body(it) }
     }
 

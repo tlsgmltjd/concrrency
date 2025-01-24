@@ -36,6 +36,7 @@ dependencies {
     implementation("io.projectreactor:reactor-core")
     testImplementation("io.projectreactor:reactor-test")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64")
 }
 
 kotlin {

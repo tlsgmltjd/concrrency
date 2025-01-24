@@ -17,7 +17,7 @@ class TicketService(
 ) {
 
     @Transactional
-    fun issue(userId: Long, ticketId: Long): Mono<TicketIssueRes> {
+    fun issueNolock(userId: Long, ticketId: Long): Mono<TicketIssueRes> {
         return userRepository.findById(userId)
             .flatMap { user ->
                 ticketRepository.findById(ticketId)
